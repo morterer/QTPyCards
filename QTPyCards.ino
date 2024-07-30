@@ -8,6 +8,7 @@
 #define TFT_CS 6                                             // TFT select pin
 #define TFT_DC 7                                             // TFT display/command pin
 #define SPI_CLOCK SD_SCK_MHZ(12)                             // max SCK frequency in Hz
+// the SD wouldn't initialize until SHARED_SPI was added to the config
 #define SD_CONFIG SdSpiConfig(SD_CS, SHARED_SPI, SPI_CLOCK)  // SPI SD card configuration.
 
 #define FILENAME_LENGTH 13                    // 8.3 filename with null terminator

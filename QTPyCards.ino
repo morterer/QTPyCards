@@ -71,7 +71,27 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // if the screen is tapped, force a new image to be picked
+  if (tap.pressed()) {
+    Serial.println("Screen tapped");
+    previousMillis += sleepMS;
+  }
+  currentMillis = millis();
+  // if sleepMS has passed, time for a new image
+  if (currentMillis - previousMillis > sleepMS) {
+    previousMillis = currentMillis;
+    root.open(bmpsDir);
+    getRandomFile(root, bmpFileCount, filename);
+    root.close();
+    // build up a string of dir and filename
+    strlcpy(fullPath, bmpsDir, sizeof(fullPath));
+    strlcat(fullPath, filename, sizeof(fullPath));
+    Serial.print("Getting file: ");
+    Serial.println(fullPath);
+    imgReadStat = reader.drawBMP(fullPath, tft, 0, 0);
+    Serial.print("Draw image status: ");
+    reader.printStatus(imgReadStat);
+  }
 }
 
 uint8_t getFileCount(File dir) {
@@ -91,3 +111,25 @@ uint8_t getFileCount(File dir) {
   }
   return fileCount;
 }
+
+void getRandomFile(File dir, uint8_t fileCount, char* outFileName) {
+  uint8_t rndNum = random(fileCount);
+  Serial.print("Random number is: ");
+  Serial.println(rndNum);
+  File entry;
+  dir.rewindDirectory();
+  Serial.print("Looking for files in: ");
+  dir.printName(&Serial);
+  Serial.println();
+  for (uint8_t i = 0; i < rndNum; i++) {
+    entry = dir.openNextFile(O_RDONLY);
+    // if this is going to be the last time through the loop, get the filename
+    if (rndNum == i + 1) {
+      Serial.println("-=Found the file!=-");
+      entry.getName(outFileName, FILENAME_LENGTH);
+    }
+    entry.close();
+  }
+}
+
+// https://community.m5stack.com/topic/3099/m5stack-switch-from-sd-to-sdfat-library
